@@ -1,30 +1,45 @@
 def insertionSort(alist):
     karsilastirma=0
     yerdegistirme=0
-    for index in range(0,len(alist)):
-        yerdegistirme=yerdegistirme+1
+    girdim=False
+    for index in range(1,len(alist)):
         currentvalue = alist[index]
         position = index
+        girdim=False
         while position>0 and alist[position-1]>currentvalue:
-          karsilastirma=karsilastirma+1
-          alist[position]=alist[position-1]
-          position = position-1
+            yerdegistirme=yerdegistirme+1
+            karsilastirma=karsilastirma+1
+            alist[position]=alist[position-1]
+            position = position-1
+            girdim=True
+
+        if girdim==False:
+            karsilastirma=karsilastirma+1
+            girdim=True
         alist[position]=currentvalue
-    print("karsilastirma sayisi :",karsilastirma)
-    print("yerdegistirme sayisi :" ,yerdegistirme)
-
-
+    print("Karsilastirma sayisi :", karsilastirma)
+    print("Yer degistirme sayisi :", yerdegistirme)
+    
 def createAnArray(size):
     import random
     array=[]
     for i in range(0,size):
         array.append(int(random.uniform(-1000,1000)))
     return array
-size=int(input("size ?"))
+
+size=int(input("size=?"))    
 alist=createAnArray(size)
+
+for i in range(0, len(alist)):
+    print(i,".item", alist[i])
+    
 import time
 t_start=time.time()
 insertionSort(alist)
+t_end=time.time()
+for i in range(0, len(alist)):
+    print(i,".item", alist[i])
+print("n kare", size*size, "time : ", t_end-t_start)
 t_end=time.time()
 
 for i in range(0,len(alist)):
