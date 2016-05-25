@@ -1,0 +1,68 @@
+package ardisikbir;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+/**
+ *
+ * @author merve
+ */
+public class ArdisikBir {
+ public static void main(String[] args) {
+ String dosyaAdi = "dosya.txt";
+ int sayac=0; int sayac1=0; int sayac2=0;
+ try{
+ FileReader fr=new FileReader("dosya.txt");
+ BufferedReader oku = new BufferedReader(fr);
+ String[] veriler=new String[2000];
+ String satir=new String();
+ String[] a={};
+ String[] satir1={};
+ String[] satir2={};
+ int i=0; int k=0;
+ while ((satir = oku.readLine())!=null) {
+ veriler[k]=satir;
+ k++; 
+ } 
+ a=veriler[0].split(",");
+ satir1=veriler[1].split(",");
+ satir2=veriler[2].split(",");
+ for(i=0;i<a.length;i++){
+ if(a[i].equals("1")){
+ if(a[i].equals(a[i+1]))
+ sayac=sayac+1;
+ }
+ }
+ for(i=0;i<satir1.length;i++){
+ if(satir1[i].equals("1")){
+ if(satir1[i].equals(satir1[i+1]))
+ sayac1=sayac1+1;
+ }
+ }
+ for(i=0;i<satir2.length;i++){
+ if(satir2[i].equals("1")){
+ if(satir2[i].equals(satir2[i+1]))
+ sayac2=sayac2+1;
+ }
+ } 
+ System.out.println(sayac);
+ System.out.println(sayac1);
+ System.out.println(sayac2); if(sayac>sayac1){
+ if(sayac>sayac2)
+ System.out.println("En çok ardışık 1 olan satır 0. satırdır");
+ }
+ if(sayac1>sayac){
+ if(sayac1>sayac2)
+ System.out.println("En çok ardışık 1 olan satır 1. satırdır");
+ }
+ if(sayac2>sayac){
+ if(sayac2>sayac1)
+ System.out.println("En çok ardışık olan satır 2. satırdır");
+ }
+ satir = oku.readLine(); 
+ oku.close();
+ }
+ catch (IOException iox){
+ System.out.println(dosyaAdi+" dosya hatasi.");
+ }
+ }
+}
