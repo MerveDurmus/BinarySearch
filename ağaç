@@ -1,0 +1,329 @@
+//5.Bölüm-Ağaçlar (İkili Arama Ağacı)
+#include <stdio.h>
+#include <stdlib.h>
+#include <conio.h>
+
+struct dugum
+{
+	int icerik;
+	struct dugum *sol;
+	struct dugum *sag;
+};
+
+struct ikili_arama_agaci
+{
+	struct dugum *kok; //En tepedeki kısım
+};
+
+void ikili_arama_agaci_olustur(struct ikili_arama_agaci **agac)
+{
+	*agac=(struct ikili_arama_agaci *)malloc( sizeof(struct ikili_arama_agaci) ); //4 Bayt'lık yer ayrıldı. (Pointer=>4 Bayt)
+	if(*agac==NULL)
+	{
+		printf("Heap'te gerekli yer ayrilmadi...");
+		exit(1);
+	}
+	(*agac)->kok=NULL;
+}
+
+int ikili_agac_bosmu(struct ikili_arama_agaci *agac)
+{
+	if(agac->kok==NULL)
+		return 1;
+	else
+		return 0;
+}
+
+struct dugum *dugum_olustur(int icerik)
+{
+	struct dugum *d=(struct dugum *)malloc( sizeof(struct dugum) ); //12 Bayt'lık yer ayrıldı.
+	if(d==NULL)
+	{
+		printf("Heap'te gerekli yer ayrilmadi...");
+		exit(1);
+	}
+	d->icerik=icerik; //(*d).icerik=icerik
+	d->sol=d->sag=NULL; //Önce sag'a NULL atanıyor sonra bu değer sol'a aktarılıyor.
+	return d;
+}
+
+void ekle(struct ikili_arama_agaci *agac,int icerik)
+{
+	struct dugum *dugum;
+	struct dugum *d;
+	struct dugum *geri; //[ ][icerik][geri]
+
+	d=agac->kok;
+	while(d!=NULL)
+	{
+		geri=d;
+		if(icerik < d->icerik)
+			d=d->sol;
+		else if(icerik > d->icerik)
+			d=d->sag;
+		else
+			return;
+	}
+	dugum=dugum_olustur(icerik);
+	if(agac->kok==NULL)
+	{
+		agac->kok=dugum;
+		return;
+	}
+	if(icerik < geri->icerik)
+		geri->sol=dugum;
+	else
+		geri->sag=dugum;
+}
+
+void inorder_yardimci(struct dugum *kok)
+{
+	if(kok==NULL)
+		return;
+	inorder_yardimci(kok->sol);
+	printf("%4d ",kok->icerik);
+	inorder_yardimci(kok->sag);
+}
+
+void inorder(struct ikili_arama_agaci *agac)
+{
+	if(agac==NULL)
+		return;
+	inorder_yardimci(agac->kok);
+	printf("\n");
+}
+
+void preorder_yardimci(struct dugum *kok)
+{
+	if(kok==NULL)
+		return;
+	printf("%4d ",kok->icerik);
+	preorder_yardimci(kok->sol);
+	preorder_yardimci(kok->sag);
+}
+
+void preorder(struct ikili_arama_agaci *agac)
+{
+	if(agac==NULL)
+		return;
+	preorder_yardimci(agac->kok);
+	printf("\n");
+}
+
+void postorder_yardimci(struct dugum *kok)
+{
+	if(kok==NULL)
+		return;
+	postorder_yardimci(kok->sol);
+	postorder_yardimci(kok->sag);
+	printf("%4d ",kok->icerik);
+}
+
+void postorder(struct ikili_arama_agaci *agac)
+{
+	if(agac==NULL)
+		return;
+	postorder_yardimci(agac->kok);
+	printf("\n");
+}
+
+int dugum_sayisi(struct dugum *kok)
+{
+	if(kok==NULL)
+		return 0;
+	return 1+dugum_sayisi(kok->sol)+dugum_sayisi(kok->sag);
+}
+
+int yaprak_sayisi(struct dugum *kok)
+{
+	if(kok==NULL)
+		return 0;
+	if(kok->sol==NULL && kok->sag==NULL)
+		return 1;
+	else
+		return yaprak_sayisi(kok->sol)+yaprak_sayisi(kok->sag);
+}
+
+void sil(struct ikili_arama_agaci *agac,int silinen)
+{
+	struct dugum *d=agac->kok;
+	struct dugum *parent=NULL; //Silinen elemanın bir üstü.
+	struct dugum *d1,*d2;
+	int sol; //Parentin solundan.
+	while(d!=NULL)
+	{
+		if(silinen < d->icerik) //Silinmeye soldan devam edilir.
+		{
+			parent=d;
+			d=d->sol;
+			sol=1; //Silinen elemana nereden yaklaşıldığını tespit etmek için.
+		}
+		else if(silinen > d->icerik)
+		{
+			parent=d;
+			d=d->sag;
+			sol=0;
+		}
+		else
+			break;
+	}
+	if(d==NULL)
+		return;
+	if(d->sol==NULL) //Silinen düğümün solu boş.
+	{
+		if(parent==NULL)
+			agac->kok=d->sag;
+		else
+		{
+			if(sol==1)
+				parent->sol=d->sag;
+			else
+				parent->sag=d->sag;
+		}
+	}
+	else if(d->sag==NULL) //Silinen düğümün sağı boş.
+	{
+		if(parent==NULL)
+			agac->kok=d->sol;
+		else
+		{
+			if(sol==1)
+				parent->sol=d->sol;
+			else
+				parent->sag=d->sol;
+		}
+	}
+	else   //Silinen düğümün hem sağı hem de solu dolu.
+	{      //Silinecek düğümün solunun en sağına git.
+	       //En sağdaki düğüm silinen düğümün konumunu alır.
+		d1=d->sol;
+		d2=NULL;
+		while(d1->sag!=NULL)
+		{
+			d2=d1;
+			d1=d1->sag;
+		}
+		if(d2!=NULL)
+		{
+			d2->sag=d1->sol;
+			d1->sol=d->sol;
+		}
+		d1->sag=d->sag;
+		if(parent==NULL)
+			agac->kok=d1; //Ağacın kökü değişti.
+		else
+		{
+			if(sol==1)
+				parent->sol=d1;
+			else
+				parent->sag=d1;
+		}
+	}
+	/*else //Silinen düğümün hem sağı hem de solu dolu.
+	{      //Silinecek düğümün sağının en soluna git.
+	       //En soldaki düğüm silinen düğümün konumunu alır.
+		d1=d->sag;
+		d2=NULL;
+		while(d1->sol!=NULL)
+		{
+			d2=d1;
+			d1=d1->sol;
+		}
+		if(d2!=NULL)
+		{
+			d2->sag=d1->sag;
+			d1->sol=d->sag;
+		}
+		d1->sag=d->sol;
+		if(parent==NULL)
+			agac->kok=d1; //Ağacın kökü değişti.
+		else
+		{
+			if(sol==1)
+				parent->sol=d1;
+			else
+				parent->sag=d1;
+		}
+	}*/
+}
+
+void yoket(struct dugum **kok) //Kök değişeceği için ** .
+{
+	if(*kok!=NULL)
+	{
+		yoket( &(*kok)->sol );
+		yoket( &(*kok)->sag );
+		free(*kok);
+		*kok=NULL;
+	}
+}
+
+int main()
+{
+	struct ikili_arama_agaci *agac; //Başlangıç değeri random bir değer.
+
+	ikili_arama_agaci_olustur(&agac);
+
+	/*Not 1:
+	Yazdırma Biçimleri:				100
+	Inorder: 5-80-100-200		              80   200
+	Preorder: 100-80-5-200       		     5
+	Postorder: 5-80-200-100
+	*/
+
+	/*Not 2:
+	struct dugum d; => Nesnenin kendisi. (*d).icerik şeklinde bir tanımlama olamaz!
+	struct dugum *p; => Nesnenin göstericisi. (*p).icerik || p->icerik şeklinde tanımlanabilir.
+	*/
+
+	/*Not 3:
+	ekle(agac,100);									 100
+	ekle(agac,80);								       80   120
+	ekle(agac,45);								     45	       167
+	ekle(agac,120);									    150
+	ekle(agac,167);
+	ekle(agac,150);
+	inorder(agac); //45 80 100 120 150 167
+	preorder(agac); //100 80 45 120 167 150
+	postorder(agac); //45 80 150 167 120 100
+	
+	printf( "Dugum Sayisi: %4d\n",dugum_sayisi(agac->kok) ); //Düğüm Sayısı:6
+	printf( "Yaprak Sayisi: %4d\n",yaprak_sayisi(agac->kok) ); //Yaprak Sayısı:2
+	*/
+
+	ekle(agac,100);      
+	ekle(agac,50);		   
+	ekle(agac,200);
+	ekle(agac,25);
+	ekle(agac,75);
+	ekle(agac,20);
+	ekle(agac,35);
+	ekle(agac,98);
+	ekle(agac,99);
+	ekle(agac,500);
+	ekle(agac,400);
+	ekle(agac,300);
+	ekle(agac,210);
+	ekle(agac,375);
+	inorder(agac); //20 25 35 50 75 98 99 100 200 210 300 375 400 500
+        preorder(agac); //100 50 25 20 35 75 98 99 200 500 400 300 210 375
+	postorder(agac); //20 35 25 99 98 75 50 210 375 300 400 500 200 100
+
+	/*
+				[100]----
+		  	   [50]          [200]--------
+	  	        [25]   [75]	              [500]
+                      [20][35]     [98]            [400]	
+				      [99]      [300]
+			                     [210][375]
+	*/
+
+	//sil(agac,50);
+	//preorder(agac);
+
+	//yoket(&agac->kok);
+	//preorder(agac);
+
+	getch();
+	return 0;
+}
