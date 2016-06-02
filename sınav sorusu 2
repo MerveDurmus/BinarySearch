@@ -1,0 +1,219 @@
+Soru 2.) 6,4,7,8,1,0,2,9,5,3 sırasında bellekte pointer based bir yapıda ( class tanımını siz istediğiniz formatta düşünebilirsiniz ) olan bir sayı dizisi için quick sort algoritmasını yazıp karmaşıklığını best case için hesaplayınız.
+
+#include <iostream>
+#include <cstdio>
+using namespace std;
+struct node
+{
+    int data;
+    struct node *next;
+};
+//liste başına eleman ekleme.
+void push(struct node** head_ref, int new_data)
+{
+    struct node* new_node = new node;
+    new_node->data  = new_data;
+    new_node->next = (*head_ref);
+    (*head_ref)    = new_node;
+}
+void printList(struct node *node)
+{
+    while (node != NULL)
+    {
+        printf("%d  ", node->data);
+        node = node->next;
+    }
+    printf("\n");
+}
+struct node *getTail(struct node *cur)
+{
+    while (cur != NULL && cur->next != NULL)
+        cur = cur->next;
+    return cur;
+}
+
+struct node *partition(struct node *head, struct node *end,
+                       struct node **newHead, struct node **newEnd)
+{
+    struct node *pivot = end;
+    struct node *prev = NULL, *cur = head, *tail = pivot;
+    while (cur != pivot)
+    {
+        if (cur->data < pivot->data)
+        {
+            if ((*newHead) == NULL)
+                (*newHead) = cur;
+            prev = cur;
+            cur = cur->next;
+        }
+        else 
+        {
+            if (prev)
+                prev->next = cur->next;
+            struct node *tmp = cur->next;
+            cur->next = NULL;
+            tail->next = cur;
+            tail = cur;
+            cur = tmp;
+        }
+    }
+    if ((*newHead) == NULL)
+        (*newHead) = pivot;
+    (*newEnd) = tail;
+    return pivot;
+}
+struct node *quickSortRecur(struct node *head, struct node *end)
+{
+    if (!head || head == end)
+        return head;
+
+    node *newHead = NULL, *newEnd = NULL;
+    struct node *pivot = partition(head, end, &newHead, &newEnd);
+    if (newHead != pivot)
+    {
+        struct node *tmp = newHead;
+        while (tmp->next != pivot)
+            tmp = tmp->next;
+        tmp->next = NULL;
+        newHead = quickSortRecur(newHead, tmp);
+        tmp = getTail(newHead);
+        tmp->next =  pivot;
+    }
+    pivot->next = quickSortRecur(pivot->next, newEnd);
+
+    return newHead;
+}
+void quickSort(struct node **headRef)
+{
+    (*headRef) = quickSortRecur(*headRef, getTail(*headRef));
+    return;
+}
+int main()
+{
+    struct node *a = NULL;
+    push(&a, 6);
+    push(&a, 4);
+    push(&a, 7);
+    push(&a, 8);
+    push(&a, 1);
+    push(&a, 0);
+    push(&a, 2);
+    push(&a, 9);
+    push(&a, 5);
+    push(&a, 3);
+    cout << "Bagli listenin sirasiz hali \n";
+    printList(a);
+    quickSort(&a);
+    cout << "bagli liste sirali \n";
+    printList(a);
+    return 0;
+}
+
+KARMAŞIKLIK
+
+Dizinin pivot sayısı=6 
+
+Şimdi bu pivot sayıdan küçükler ve büyükler şeklinde sıralamaya başlayalım. 6 dan sonra gelenlere bakıyoruz..ilk olarak 4 sayısı 6 ten küçük olduğu için 4 ün soluna..
+
+ 		6
+	    4
+
+7>6 olduğu için yine 6 nın sağına..
+                 6
+            4        7
+
+
+8>6 olduğu için 6 nın sağına..
+		6
+	   4        8   7
+
+
+1<6 olduğu için 6 nın soluna..
+		6
+      4    1        8	7
+
+
+0<6 olduğu için 6 nın soluna..
+		6
+ 4    1    0        8   7
+
+
+2<6 olduğu için 6 nın soluna..
+		    6
+ 4    1    0    2        8   7         
+
+
+9>6 olduğu için 6 nın sağını..
+		    6
+ 4    1    0    2       9   8   7
+
+5<6 olduğu için 6 nın soluna..
+		        6
+ 4    1    0    2   5       9   8   7
+
+3<6 olduğu için 6 nın soluna..
+		            6
+ 4    1    0    2   5   3       9   8   7
+
+Listemizin ilk gruplandırmada 6 dan küçükler ve büyükler olarak sıralanmış oldu.Fakat bu algoritma recursive bir algoritmadır ve aynı işlemleri dizi gruplanamayacak konuma gelene kadar devam edecektir.Şuan bu listeye 2 farklı bölüme sahip bir dizi şeklinde bakabiliriz,yani 2 gruplu dizi(6 dan küçükler – 6 dan büyükler).
+Şimdi ilk grubumuz olan 6 dan küçükleri yine baştaki sayıyı pivot sayı olarak seçip sıralamaya yeniden yaparız.
+
+Sol dizinin Pivot sayısı=4 Şimdi sıralama işlemine başlayalım,bakacağımız ilk sayı 1 olacaktır.
+
+1<4 olduğu için 4 ün soluna..
+	4
+    1
+
+Algoritmamızın karmaşıklığını incelemiş olursak,her adımda N sayıya bakıyoruz ve sürekli ikili şekilde gruplamaya çalışıyoruz.Bundan dolayı,  O(nlogn) algoritmamızın performansını belirlemiş olur.Fakat tesadüfen seçilen her pivot sayı dizinin en büyük veya en küçük elemanı olur ise,o zamanda performans O(n’2) olacaktır.Çünkü her adımda pivot sayıdan küçükler veya büyükler şeklinde tek bir grup olacaktır.Her adımda N-1 sayıya bakılacağından dolayı toplam N sayıya bakılmış olur.
+				10
+			9
+		8
+	7
+6
+Şeklinde gittiğini düşünür isek,her geçişte N tane sayı ele aldığımızdan dolayı,algoritma en kötü durumda O(n 2) ifadesini alacaktır.
+
+
+
+0<4 olduğu için 4 ün soluna..
+		4
+        1   0
+
+2<4 olduğu için 4 ün soluna..
+	        4
+    1   0   2
+
+5>4 olduğu için 4 ün sağına..
+	        4
+    1   0   2       5
+
+3<4 olduğu için 4 ün soluna..
+	        4
+1   0   2   3       5
+Başka eleman kalmadığı için sol dizimizin yeni hali yukarıdaki gibi olacaktır.Dizimizin bu bölümünün sol tarafı hala sıralı değil.O halde son kez pivot işlemi başlatılacak.(sağ tarafta 1 eleman kaldı (5 sayısı) onu gruplandırmaya gerek yok) 
+
+Pivot sayısı=1
+0<1 olduğu için 1 in soluna..
+	1
+    0
+Şuan listemizin sol tarafı(yani 4 ten küçükler bölümü) sıralanmış oldu.Fakat buraya daha sonra döneceğiz çünkü dizimizin sağ tarafı halen sıralı değil.
+
+Şimdi 6 dan büyükler grubunu sıralamaya başlayalım.
+9 8 7
+Pivot sayı=9
+
+8<9 olduğu için 9 un soluna..
+         9
+    8
+7<9 olduğu için 9 un soluna..
+	9
+8   7
+
+Pivot sayısı=8
+
+7<8 olduğu için 8 in soluna..
+         8
+    7
+
+Listemiz sıralanmış oldu
+1 2 3 4 5 6 7 8 9 
+Sonuç 
