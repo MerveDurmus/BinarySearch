@@ -1,0 +1,57 @@
+#include<stdio.h>
+#include<math.h>
+
+void tahtayiyaz(int n);
+int yerlesme(int k,int i);
+int x[100];
+
+void NVezir(int k,int n)
+{
+  int i;
+  for(i=1;i<=n;i++)
+  {
+    if(yerlesme(k,i)==1)
+    {     x[k]=i;
+            if(k==n)
+            {
+                printf("Cozum\n");
+                tahtayiyaz(n);
+            }
+            else
+                NVezir(k+1,n);
+    }
+  }
+}
+
+int yerlesme(int k,int i)
+{
+  int j;
+  for(j=1;j<k;j++)
+  {
+    if((x[j]==i)||abs(x[j]-i)==abs(j-k))
+        return 0;
+  }
+  return 1;
+}
+
+void tahtayiyaz(int n)
+{
+  int i;
+  for(i=1;i<=n;i++)
+    printf("%d  ",x[i]);
+}
+
+void main()
+{
+    int n;
+    printf("Vezir Sayisini(N) giriniz:");
+    scanf("%d",&n);
+    NVezir(1,n);
+}
+
+
+N Vezir Probleminin karmaşıklığı:
+
+    NVezir() fonksiyonu ardışık olarak çağırdığı için O(n*n)'dir.
+    fakat bu programda NVezir() fonksiyonunun içinde yerlesme() fonksiyonunu çağırdığı için karmaşıklığı k'ya bağlı olarak değişecektir.
+    bu yüzden best-case ve worst-case de k'ya bağlı değişeceğinden bu kod için karmaşıklık O(k) dır diyebiliriz.
